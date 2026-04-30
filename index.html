@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vyjmenovaná slova</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.2);
+    --text: #1a1a1a;
+    --text-muted: #6b6b6b;
+    --text-hint: #999;
+    --teal: #1D9E75;
+    --teal-light: #E1F5EE;
+    --teal-dark: #085041;
+    --teal-deep: #04342C;
+    --amber-light: #FAEEDA;
+    --amber-border: #EF9F27;
+    --amber-text: #633806;
+    --red-light: #FCEBEB;
+    --red-border: #A32D2D;
+    --red-text: #501313;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-pill: 999px;
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem 4rem;
+    color: var(--text);
+  }
+
+  #app {
+    width: 100%;
+    max-width: 620px;
+  }
+
+  h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 34px;
+    color: var(--text);
+    margin-bottom: 4px;
+    letter-spacing: -0.5px;
+  }
+
+  .subtitle {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+  }
+
+  .mode-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .modeBtn {
+    padding: 7px 18px;
+    border-radius: var(--radius-pill);
+    border: 1.5px solid var(--border-strong);
+    background: var(--surface);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    transition: all .15s;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .modeBtn:hover { background: #f0f0f0; }
+
+  .modeBtn.active {
+    background: var(--teal);
+    border-color: var(--teal-dark);
+    color: #fff;
+  }
+
+  .trap-badge {
+    display: inline-block;
+    background: var(--amber-light);
+    color: var(--amber-text);
+    border: 1px solid var(--amber-border);
+    border-radius: var(--radius-pill);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 10px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .score-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .sbox {
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 10px 18px;
+    text-align: center;
+    min-width: 72px;
+    border: 1px solid var(--border);
+  }
+
+  .sbox .num { font-size: 22px; font-weight: 700; color: var(--text); }
+  .sbox .lbl { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; }
+
+  .progress-bar {
+    height: 8px;
+    background: var(--bg);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border);
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--teal);
+    border-radius: var(--radius-pill);
+    transition: width .4s ease;
+  }
+
+  .letter-tag {
+    display: inline-block;
+    background: var(--teal-light);
+    color: var(--teal-dark);
+    border-radius: var(--radius-pill);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 14px;
+    margin-bottom: 14px;
+  }
+
+  .sentence {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.3px;
+  }
+
+  .blank {
+    display: inline-block;
+    border-bottom: 3px solid var(--teal);
+    min-width: 24px;
+    text-align: center;
+    margin: 0 1px;
+    font-weight: 700;
+    color: var(--teal-deep);
+    font-size: 24px;
+  }
+
+  .blank-other {
+    display: inline-block;
+    border-bottom: 2px solid #ccc;
+    min-width: 20px;
+    text-align: center;
+    margin: 0 1px;
+    color: var(--text-hint);
+    font-size: 24px;
+  }
+
+  .choices {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
+  }
+
+  .choice {
+    padding: 11px 26px;
+    border-radius: var(--radius-pill);
+    border: 2px solid var(--border-strong);
+    background: var(--bg);
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    transition: all .15s;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .choice:hover {
+    border-color: var(--teal);
+    background: var(--teal-light);
+    color: var(--teal-deep);
+  }
+
+  .choice.correct {
+    background: var(--teal-light);
+    border-color: var(--teal);
+    color: var(--teal-deep);
+  }
+
+  .choice.wrong {
+    background: var(--red-light);
+    border-color: var(--red-border);
+    color: var(--red-text);
+  }
+
+  .feedback {
+    font-size: 15px;
+    font-weight: 700;
+    min-height: 24px;
+    margin-bottom: 1rem;
+  }
+
+  .feedback.ok { color: #0F6E56; }
+  .feedback.err { color: var(--red-border); }
+
+  .hint-box {
+    background: var(--amber-light);
+    border: 1px solid var(--amber-border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--amber-text);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+
+  .next-btn {
+    padding: 11px 30px;
+    border-radius: var(--radius-pill);
+    border: none;
+    background: var(--teal);
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    transition: background .15s;
+  }
+
+  .next-btn:hover { background: #0F6E56; }
+  .next-btn:disabled { opacity: .4; cursor: default; }
+
+  .end-screen { text-align: center; padding: 2rem 1rem; }
+  .trophy { font-size: 56px; margin-bottom: .75rem; }
+
+  .end-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 28px;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .end-sub {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 1.75rem;
+  }
+
+  .restart-btn {
+    padding: 12px 28px;
+    border-radius: var(--radius-pill);
+    border: none;
+    background: var(--teal);
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    margin: 4px;
+    transition: background .15s;
+  }
+
+  .restart-btn:hover { background: #0F6E56; }
+
+  .ghost-btn {
+    background: var(--bg);
+    color: var(--text);
+    border: 1.5px solid var(--border-strong);
+  }
+
+  .ghost-btn:hover { background: #ececec; }
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>Vyjmenovaná slova</h1>
+  <p class="subtitle">Doplň správné písmeno na místo podtržítka</p>
+
+  <div id="main"></div>
+</div>
+
+<script>
+const ALL_Q = [
+  {s:"Musíme b_t opatrní.",a:"ý",letter:"B",trap:false},
+  {s:"Náš b_t je v přízemí.",a:"y",letter:"B",trap:false},
+  {s:"Babička koupila nový náb_tek.",a:"y",letter:"B",trap:false},
+  {s:"Sedlák choval dob_tek.",a:"y",letter:"B",trap:false},
+  {s:"V této vesnici žije mnoho ob_vatel.",a:"y",letter:"B",trap:false},
+  {s:"Pes je velmi b_strý.",a:"y",letter:"B",trap:false},
+  {s:"Na louce roste b_lina.",a:"y",letter:"B",trap:false},
+  {s:"Na pastvině pásla kob_la.",a:"y",letter:"B",trap:false},
+  {s:"Na poli stál velký b_k.",a:"ý",letter:"B",trap:false},
+  {s:"Maminka b_dlí v Brně.",a:"y",letter:"B",trap:false},
+  {s:"Petr ob_čejně chodí včas.",a:"y",letter:"B",trap:false},
+  {s:"V kapli žil starý b_skup.",a:"i",letter:"B",trap:true,hint:"'Biskup' — cizí slovo, není mezi vyjmenovanými. Píšeme i."},
+  {s:"Maminka koupila nový b_skvit.",a:"i",letter:"B",trap:true,hint:"'Biskvit' — cizí slovo, píšeme i."},
+  {s:"Auto zastavilo na kr_žovatce.",a:"i",letter:"B",trap:true,hint:"'Křižovatka' — od slova kříž, ne vyjmenované slovo. Píšeme i."},
+
+  {s:"Tatínek jede na l_žích.",a:"y",letter:"L",trap:false},
+  {s:"Bolelo ho l_tko.",a:"y",letter:"L",trap:false},
+  {s:"Voda pomalu pl_nula řekou.",a:"y",letter:"L",trap:false},
+  {s:"Musíš pol_kat lék.",a:"y",letter:"L",trap:false},
+  {s:"V kuchyni unikal pl_n.",a:"y",letter:"L",trap:false},
+  {s:"Ze stromu sloupli l_ko.",a:"ý",letter:"L",trap:false},
+  {s:"Sl_šel jsem hudbu z dálky.",a:"y",letter:"L",trap:false},
+  {s:"U potoka stál starý ml_n.",a:"ý",letter:"L",trap:false},
+  {s:"Bl_skalo se na čase.",a:"ý",letter:"L",trap:false},
+  {s:"Dědeček má l_sou hlavu.",a:"y",letter:"L",trap:false},
+  {s:"Na zahradě roste pel_něk.",a:"y",letter:"L",trap:false},
+  {s:"Plyšový medvídek má pl_šovou srst.",a:"y",letter:"L",trap:false},
+  {s:"Hrál na l_ru.",a:"i",letter:"L",trap:true,hint:"'Lyra' není mezi vyjmenovanými slovy! Ale píše se s y, protože pochází z řečtiny."},
+
+  {s:"M_slím na tebe každý den.",a:"y",letter:"M",trap:false},
+  {s:"Před spaním jdu si um_t ruce.",a:"ý",letter:"M",trap:false},
+  {s:"Na zahradě žije hm_z.",a:"y",letter:"M",trap:false},
+  {s:"Pod postelí se schovávala m_š.",a:"y",letter:"M",trap:false},
+  {s:"Pom_lil jsem se v počítání.",a:"ý",letter:"M",trap:false},
+  {s:"Na listu seděl hlem_žď.",a:"ý",letter:"M",trap:false},
+  {s:"Zam_kám dveře na klíč.",a:"y",letter:"M",trap:false},
+  {s:"Po louce sm_kal pytel.",a:"ý",letter:"M",trap:false},
+  {s:"Z města Litom_šl pochází Smetana.",a:"y",letter:"M",trap:false},
+  {s:"M_ jsme přišli první.",a:"y",letter:"M",trap:false},
+  {s:"V lese letělo chm_ří z květů.",a:"ý",letter:"M",trap:false},
+  {s:"Náhodou se nachom_tl k nehodě.",a:"ý",letter:"M",trap:false},
+  {s:"Na zdi visel obraz s m_stikou.",a:"y",letter:"M",trap:true,hint:"'Mystika' — cizí slovo, píše se s y, ale není mezi vyjmenovanými."},
+  {s:"M_nus je matematické znaménko.",a:"i",letter:"M",trap:true,hint:"'Mínus' — cizí slovo, píšeme i."},
+  {s:"S_tnice je část oka.",a:"i",letter:"S",trap:true,hint:"'Sítnice' — od slova síť, ne vyjmenované slovo. Píšeme í."},
+
+  {s:"Donesl p_tel brambor.",a:"y",letter:"P",trap:false},
+  {s:"Netop_r létá v noci.",a:"ý",letter:"P",trap:false},
+  {s:"Byl plný p_chy.",a:"ý",letter:"P",trap:false},
+  {s:"Na louce roste p_r.",a:"ý",letter:"P",trap:false},
+  {s:"P_tlák chodí do lesa tajně.",a:"y",letter:"P",trap:false},
+  {s:"Kůň má tvrdá kop_ta.",a:"y",letter:"P",trap:false},
+  {s:"Včely sbírají p_l z květů.",a:"y",letter:"P",trap:false},
+  {s:"Klop_tl o kámen.",a:"ý",letter:"P",trap:false},
+  {s:"Na rose se třp_tily kapky.",a:"y",letter:"P",trap:false},
+  {s:"P_kal za své chyby.",a:"y",letter:"P",trap:false},
+  {s:"Holčička se začervenala a zap_řila se.",a:"ý",letter:"P",trap:false},
+  {s:"Na egyptské p_ramidě pracovaly tisíce lidí.",a:"y",letter:"P",trap:true,hint:"'Pyramida' — cizí slovo, píše se s y, ale není mezi vyjmenovanými slovy po P."},
+
+  {s:"Na větvi seděla s_kora.",a:"ý",letter:"S",trap:false},
+  {s:"S_r leží v lednici.",a:"ý",letter:"S",trap:false},
+  {s:"Tatínkův s_n hraje fotbal.",a:"y",letter:"S",trap:false},
+  {s:"Po obědě jsem byl s_tý.",a:"y",letter:"S",trap:false},
+  {s:"Venku bylo s_chravo.",a:"y",letter:"S",trap:false},
+  {s:"S_pal mouku na stůl.",a:"y",letter:"S",trap:false},
+  {s:"Maso je ještě s_rové.",a:"y",letter:"S",trap:false},
+  {s:"Na louce s_čí had.",a:"y",letter:"S",trap:false},
+  {s:"V dutině žije s_sel.",a:"y",letter:"S",trap:false},
+  {s:"V noci houká s_ček.",a:"ý",letter:"S",trap:false},
+  {s:"Mokré prádlo us_chá na šňůře.",a:"y",letter:"S",trap:false},
+
+  {s:"V_ jste včera nebyli ve škole.",a:"y",letter:"V",trap:false},
+  {s:"Učitelka nám v_ká.",a:"y",letter:"V",trap:false},
+  {s:"V lese žije v_r.",a:"ý",letter:"V",trap:false},
+  {s:"Udělali jsme v_let k moři.",a:"ý",letter:"V",trap:false},
+  {s:"V_dra plavala v potoce.",a:"y",letter:"V",trap:false},
+  {s:"V_soká věž ční nad městem.",a:"y",letter:"V",trap:false},
+  {s:"V noci v_l hladový vlk.",a:"y",letter:"V",trap:false},
+  {s:"Děti zv_kají na novou školu.",a:"y",letter:"V",trap:false},
+  {s:"Pes žv_kal kost.",a:"ý",letter:"V",trap:false},
+  {s:"Hubený chlapec je hotové v_žle.",a:"y",letter:"V",trap:false},
+  {s:"Dav dělal velký pov_k.",a:"y",letter:"V",trap:false},
+  {s:"Kovář pracoval u v_hně.",a:"ý",letter:"V",trap:false},
+  {s:"Bez cav_ků se pustil do práce.",a:"y",letter:"V",trap:false},
+  {s:"V_skali radostí.",a:"ý",letter:"V",trap:false},
+
+  {s:"Mluví cizím jaz_kem.",a:"y",letter:"Z",trap:false},
+  {s:"Naz_vali ho přítelem.",a:"ý",letter:"Z",trap:false},
+  {s:"Brz_ přijde léto.",a:"y",letter:"Z",trap:false},
+  {s:"Na pražském letišti Ruz_ně přistávají letadla.",a:"y",letter:"Z",trap:false},
+  {s:"Z_ma byla letos tuhá.",a:"i",letter:"Z",trap:true,hint:"'Zima' — krátké i! Není mezi vyjmenovanými slovy po Z."},
+  {s:"Šel koup_t chleba.",a:"i",letter:"Z",trap:true,hint:"'Koupit' — infinitiv -it, píšeme i."},
+  {s:"Chlapec zp_val a zíval.",a:"í",letter:"Z",trap:true,hint:"'Zpíval' — od slova zpívat, není mezi vyjmenovanými po Z. Píšeme í."},
+
+  {s:"Petr b_l první v cíli.",a:"y",letter:"DVOJICE",trap:true,hint:"'Byl' = sloveso být (minulý čas). Píšeme y. Pozor na záměnu s 'bil' = mlátil!"},
+  {s:"Otec b_l koně bičem.",a:"i",letter:"DVOJICE",trap:true,hint:"'Bil' = mlátil, od slovesa bít. Píšeme i. Záměna byl/bil je nejčastější chyták!"},
+  {s:"M_ jsme dnes vyhráli zápas.",a:"y",letter:"DVOJICE",trap:true,hint:"'My' = zájmeno (1. osoba množného čísla), patří mezi vyjmenovaná slova po M. Píšeme y. Pozor — záměna s 'mi' = mně!"},
+  {s:"Maminka m_ koupila knihu.",a:"i",letter:"DVOJICE",trap:true,hint:"'Mi' = mně (3. pád zájmena já). Píšeme i. Záměna my/mi je klasický chyták!"},
+  {s:"V_ jste přišli pozdě.",a:"y",letter:"DVOJICE",trap:true,hint:"'Vy' = zájmeno (2. osoba množného čísla), patří mezi vyjmenovaná po V. Píšeme y. Pozor — záměna s 'vi' (např. 'vidí')!"},
+  {s:"S_pal písek z bot.",a:"y",letter:"DVOJICE",trap:true,hint:"'Sypal' = vyhazoval, od sypat (vyjmenované). Píšeme y. Pozor — 'sípal' = chrčel hlasem!"},
+  {s:"Holub se v_letěl z holubníku.",a:"y",letter:"DVOJICE",trap:true,hint:"'Vyletěl' — předpona vy- patří mezi vyjmenovaná. Píšeme y."},
+  {s:"Rozs_pal cukr po stole.",a:"y",letter:"DVOJICE",trap:true,hint:"'Rozsypal' = od sypat (vyjmenované). Píšeme y."},
+  {s:"L_šku jsme viděli v lese.",a:"i",letter:"DVOJICE",trap:true,hint:"'Lišku' — od slova liška, ne lyska (vodní pták). Píšeme i!"},
+  {s:"Na rybníku plave l_ska.",a:"y",letter:"DVOJICE",trap:true,hint:"'Lyska' = vodní pták s lysou hlavou, od 'lysý'. Píšeme y. Pozor na záměnu s 'liška'!"},
+  {s:"Pták je v_soko na obloze.",a:"y",letter:"DVOJICE",trap:true,hint:"'Vysoko' — od 'vysoký' (vyjmenované). Píšeme y."},
+  {s:"V_kal mu z úcty k jeho věku.",a:"y",letter:"DVOJICE",trap:true,hint:"'Vykal' = říkal vy, od 'vykat' (vyjmenované). Píšeme y. Záměna s 'vikal' nedává smysl, ale pozor na celkové y!"},
+  {s:"M_lý kamarád pomáhá.",a:"i",letter:"DVOJICE",trap:true,hint:"'Milý' — od slova mít rád / přívětivý. Píšeme i. Pozor na záměnu s 'mýlil se' (od mýlit, vyjmenované)!"},
+  {s:"M_lil jsem se v odpovědi.",a:"ý",letter:"DVOJICE",trap:true,hint:"'Mýlil' — od mýlit se (vyjmenované po M). Píšeme ý."},
+  {s:"P_l přišel pozdě.",a:"i",letter:"DVOJICE",trap:true,hint:"'Pil' = od slovesa pít (něco vypil). Píšeme i. Pozor — 'pyl' = včelí pyl, vyjmenované po P!"},
+  {s:"Včela sbírá p_l z květu.",a:"y",letter:"DVOJICE",trap:true,hint:"'Pyl' = vyjmenované slovo po P. Píšeme y. Záměna pil/pyl!"},
+  {s:"Sb_l hřebík do prkna.",a:"i",letter:"DVOJICE",trap:true,hint:"'Sbil' = stloukl dohromady (od bít/spojit). Píšeme i."},
+  {s:"V_řkl pravdu naplno.",a:"y",letter:"DVOJICE",trap:true,hint:"'Vyřkl' — předpona vy- patří mezi vyjmenovaná. Píšeme y."},
+  {s:"S_n nese hrušky z trhu.",a:"y",letter:"DVOJICE",trap:true,hint:"'Syn' = vyjmenované po S. Píšeme y. Pozor — 'sin' (např. v matematice) je něco jiného!"},
+  {s:"Z_skal první cenu.",a:"í",letter:"DVOJICE",trap:true,hint:"'Získal' — od slova získat. Píšeme í."},
+];
+
+let mode="all", questions=[], qIdx=0, score=0, trapScore=0, trapTotal=0, answered=false;
+
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll('.modeBtn').forEach(b => b.classList.remove('active'));
+  document.getElementById('mode' + m.charAt(0).toUpperCase() + m.slice(1)).classList.add('active');
+  startGame();
+}
+
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startGame() {
+  let pool = [...ALL_Q];
+  if (mode === 'pure') pool = pool.filter(q => !q.trap);
+  if (mode === 'trap') pool = pool.filter(q => q.trap);
+  questions = shuffle(pool).slice(0, 15);
+  qIdx = 0; score = 0; trapScore = 0; trapTotal = 0; answered = false;
+  renderQ();
+}
+
+function getOpts(a) {
+  return shuffle(['y/ý', 'i/í']);
+}
+
+function correctGroup(a) {
+  return ['y','ý'].includes(a) ? 'y/ý' : 'i/í';
+}
+
+function buildSentenceHTML(s, a2) {
+  let first = true;
+  return s.replace(/_/g, () => {
+    if (first) {
+      first = false;
+      return `<span class="blank" id="bl0">_</span>`;
+    } else {
+      return `<span class="blank-other">${a2 || '_'}</span>`;
+    }
+  });
+}
+
+function renderQ() {
+  const main = document.getElementById('main');
+  if (qIdx >= questions.length) { renderEnd(); return; }
+  const q = questions[qIdx];
+  answered = false;
+  if (q.trap) trapTotal++;
+  const pct = Math.round((qIdx / questions.length) * 100);
+  const opts = getOpts(q.a);
+  const sentHTML = buildSentenceHTML(q.s, q.a2);
+
+  main.innerHTML = `
+    <div class="score-row">
+      <div class="sbox"><div class="num">${score}</div><div class="lbl">správně</div></div>
+      <div class="sbox"><div class="num">${qIdx}</div><div class="lbl">hotovo</div></div>
+      <div class="sbox"><div class="num">${questions.length - qIdx}</div><div class="lbl">zbývá</div></div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="card">
+      <div style="margin-bottom:12px">
+        <span class="letter-tag">${q.letter === 'DVOJICE' ? 'Záludná dvojice' : 'Po ' + q.letter}</span>${q.trap ? '<span class="trap-badge">chyták</span>' : ''}
+      </div>
+      <div class="sentence">${sentHTML}</div>
+      <div class="choices" id="choices">
+        ${opts.map(o => `<button class="choice" data-val="${o}">${o}</button>`).join('')}
+      </div>
+      <div class="feedback" id="feedback"></div>
+      <div id="hintBox"></div>
+      <button class="next-btn" id="nxt" disabled>Další →</button>
+    </div>
+  `;
+
+  document.querySelectorAll('.choice').forEach(btn => {
+    btn.addEventListener('click', () => choose(btn.dataset.val, correctGroup(q.a), q.trap, q.hint || ''));
+  });
+  document.getElementById('nxt').addEventListener('click', nextQ);
+}
+
+function choose(sel, correctGrp, isTrap, hint) {
+  if (answered) return;
+  answered = true;
+  const btns = document.querySelectorAll('.choice');
+  const fb = document.getElementById('feedback');
+  const bl = document.getElementById('bl0');
+  const hb = document.getElementById('hintBox');
+  const q = questions[qIdx];
+  if (sel === correctGrp) {
+    score++;
+    if (isTrap) trapScore++;
+    fb.textContent = 'Správně!';
+    fb.className = 'feedback ok';
+    if (bl) bl.textContent = q.a;
+    btns.forEach(b => { if (b.dataset.val === correctGrp) b.className = 'choice correct'; });
+  } else {
+    fb.textContent = `Správná odpověď je: ${q.a}`;
+    fb.className = 'feedback err';
+    if (bl) bl.textContent = q.a;
+    btns.forEach(b => {
+      if (b.dataset.val === sel) b.className = 'choice wrong';
+      if (b.dataset.val === correctGrp) b.className = 'choice correct';
+    });
+    if (hint) { hb.innerHTML = `<div class="hint-box">Vysvětlení: ${hint}</div>`; }
+  }
+  document.getElementById('nxt').disabled = false;
+}
+
+function nextQ() { qIdx++; renderQ(); }
+
+function renderEnd() {
+  const pct = Math.round((score / questions.length) * 100);
+  const icon = pct === 100 ? '🏆' : pct >= 75 ? '⭐' : pct >= 50 ? '👍' : '💪';
+  const msg = pct === 100 ? 'Perfektní! Všechno správně!' : pct >= 75 ? 'Výborně!' : pct >= 50 ? 'Dobrá práce, ale ještě trénuj!' : 'Nevadí, zkus to znovu!';
+  document.getElementById('main').innerHTML = `
+    <div class="card end-screen">
+      <div class="trophy">${icon}</div>
+      <div class="end-title">${msg}</div>
+      <div class="end-sub">Celkové výsledky</div>
+      <div class="stat-grid">
+        <div class="sbox"><div class="num">${score}/${questions.length}</div><div class="lbl">správně</div></div>
+        <div class="sbox"><div class="num">${pct}%</div><div class="lbl">úspěšnost</div></div>
+        <div class="sbox"><div class="num">${trapTotal > 0 ? trapScore + '/' + trapTotal : '—'}</div><div class="lbl">chytáky</div></div>
+      </div>
+      <div>
+        <button class="restart-btn" id="btnRestart">Hrát znovu</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('btnRestart').addEventListener('click', startGame);
+}
+
+document.getElementById('modeAll') && document.getElementById('modeAll').addEventListener('click', () => setMode('all'));
+
+startGame();
+</script>
+</body>
+</html>
