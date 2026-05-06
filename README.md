@@ -1,2 +1,2 @@
-# Appka-vyjmenovan-slova-1
+# Appka-vyjmenovan-slova
 claude
